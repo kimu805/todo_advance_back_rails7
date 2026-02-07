@@ -7,8 +7,14 @@ class TasksController < ApplicationController
   end
 
   def create
-    @result = Task.create(task_params)
-    tasks_all
+    result = Tasks::CreateService.call(create_params)
+
+    if result.success?
+      @result = result.data
+      tasks_all
+    else
+      render json: { errors: result.errors }, status: :unprocessable_entity
+    end
   end
 
   def update
@@ -28,8 +34,12 @@ class TasksController < ApplicationController
 
   private
 
+  def create_params
+    params.permit(:name, :explanation, :status, :priority, :genreId, :deadlineDate)
+  end
+
   def task_params
-    params.permit(:name, :explanation, :status).merge(genre_id: params[:genreId], deadline_date: params[:deadlineDate])
+    params.permit(:name, :explanation, :status, :priority).merge(genre_id: params[:genreId], deadline_date: params[:deadlineDate])
   end
 
   def select_task
