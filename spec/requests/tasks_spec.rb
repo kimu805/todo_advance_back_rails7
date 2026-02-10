@@ -83,7 +83,7 @@ RSpec.describe 'Tasks API', type: :request do
         explanation: 'タスクの説明文',
         genre: genre,
         priority: :high,
-        status: 1,
+        status: :in_progress,
         deadline_date: '2026-12-31'
       )
     end
@@ -147,6 +147,66 @@ RSpec.describe 'Tasks API', type: :request do
         expect {
           get "/tasks/#{original_task.id}/duplicate"
         }.not_to change(Task, :count)
+      end
+    end
+  end
+
+  describe 'GET /tasks/report' do
+    context 'タスクが存在しない場合' do
+      it '正常なレスポンスを返すこと' do
+        get '/tasks/report'
+
+        expect(response).to have_http_status(:ok)
+      end
+
+      it '統計情報を返すこと' do
+        get '/tasks/report'
+
+        json = JSON.parse(response.body)
+        expect(json['totalCount']).to eq(0)
+        expect(json['countByStatus']).to eq(
+          'notStarted' => 0,
+          'inProgress' => 0,
+          'completed' => 0
+        )
+        expect(json['completionRate']).to eq(0.0)
+      end
+    end
+
+    context 'タスクが存在する場合' do
+      before do
+        Task.create!(name: 'タスク1', genre: genre, status: :not_started)
+        Task.create!(name: 'タスク2', genre: genre, status: :not_started)
+        Task.create!(name: 'タスク3', genre: genre, status: :in_progress)
+        Task.create!(name: 'タスク4', genre: genre, status: :completed)
+      end
+
+      it '正しい統計情報を返すこと' do
+        get '/tasks/report'
+
+        json = JSON.parse(response.body)
+        expect(json['totalCount']).to eq(4)
+        expect(json['countByStatus']).to eq(
+          'notStarted' => 2,
+          'inProgress' => 1,
+          'completed' => 1
+        )
+        expect(json['completionRate']).to eq(25.0)
+      end
+    end
+
+    context '完了率の端数処理' do
+      before do
+        Task.create!(name: 'タスク1', genre: genre, status: :not_started)
+        Task.create!(name: 'タスク2', genre: genre, status: :completed)
+        Task.create!(name: 'タスク3', genre: genre, status: :completed)
+      end
+
+      it '小数点以下1桁のパーセンテージで返すこと' do
+        get '/tasks/report'
+
+        json = JSON.parse(response.body)
+        expect(json['completionRate']).to eq(66.7)
       end
     end
   end
