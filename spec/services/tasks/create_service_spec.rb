@@ -12,7 +12,7 @@ RSpec.describe Tasks::CreateService do
           genreId: genre.id,
           deadlineDate: '2026-12-31',
           priority: 'high',
-          status: 1
+          status: :in_progress
         }
       end
 
@@ -40,7 +40,7 @@ RSpec.describe Tasks::CreateService do
         expect(task.genre_id).to eq(genre.id)
         expect(task.deadline_date).to eq(Date.parse('2026-12-31'))
         expect(task.priority).to eq('high')
-        expect(task.status).to eq(1)
+        expect(task.status).to eq('in_progress')
       end
 
       it 'camelCase パラメータを snake_case に変換すること' do

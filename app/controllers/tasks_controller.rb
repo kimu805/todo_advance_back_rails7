@@ -6,6 +6,11 @@ class TasksController < ApplicationController
     tasks_all
   end
 
+  def report
+    result = Tasks::ReportService.call
+    @report = result.data
+  end
+
   def create
     result = Tasks::CreateService.call(create_params)
 

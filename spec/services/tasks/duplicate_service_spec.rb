@@ -8,7 +8,7 @@ RSpec.describe Tasks::DuplicateService do
       explanation: 'タスクの説明文',
       genre: genre,
       priority: :medium,
-      status: 0,
+      status: :not_started,
       deadline_date: '2026-12-31'
     )
   end
@@ -46,21 +46,21 @@ RSpec.describe Tasks::DuplicateService do
 
     context '特別な処理' do
       it 'コピー元が進行中でも status が未着手（初期ステータス）になること' do
-        original_task.update!(status: 1)
+        original_task.update!(status: :in_progress)
 
         result = described_class.call(original_task)
         task = result.data
 
-        expect(task.status).to eq(0)
+        expect(task.status).to eq('not_started')
       end
 
       it 'コピー元が完了でも status が未着手（初期ステータス）になること' do
-        original_task.update!(status: 2)
+        original_task.update!(status: :completed)
 
         result = described_class.call(original_task)
         task = result.data
 
-        expect(task.status).to eq(0)
+        expect(task.status).to eq('not_started')
       end
 
       it 'コピー元に deadline_date があっても nil になること' do
