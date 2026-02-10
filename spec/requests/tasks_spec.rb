@@ -141,10 +141,12 @@ RSpec.describe 'Tasks API', type: :request do
     end
 
     context 'HTTPメソッド' do
-      it 'GET /tasks/:id/duplicate はルーティングエラーになること' do
+      it 'GET /tasks/:id/duplicate は duplicate アクションとして処理されないこと' do
+        original_task # let を事前に評価
+
         expect {
           get "/tasks/#{original_task.id}/duplicate"
-        }.to raise_error(ActionController::RoutingError)
+        }.not_to change(Task, :count)
       end
     end
   end

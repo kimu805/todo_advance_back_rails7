@@ -1,5 +1,5 @@
 class TasksController < ApplicationController
-  before_action :select_task, only: [:update, :destroy, :update_status]
+  before_action :select_task, only: [:update, :destroy, :update_status, :duplicate]
   skip_before_action :verify_authenticity_token
 
   def index
@@ -30,6 +30,16 @@ class TasksController < ApplicationController
   def update_status
     @task.update(status: params[:status])
     tasks_all
+  end
+
+  def duplicate
+    result = Tasks::DuplicateService.call(@task)
+
+    if result.success?
+      tasks_all
+    else
+      render json: { errors: result.errors }, status: :unprocessable_entity
+    end
   end
 
   private

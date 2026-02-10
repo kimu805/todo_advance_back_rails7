@@ -74,3 +74,4 @@ end
 
 gem 'rack-cors'
 gem 'pry-rails'
+gem "ruby-lsp", "~> 0.26.6", :group => :development
